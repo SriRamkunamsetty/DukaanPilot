@@ -1,0 +1,19 @@
+{
+  "_comment": "Editable festival calendar. 'uplift' is a conservative starting heuristic for shop-wide demand in the 'lead_days' before the festival; the roadmap is to learn it from each shop's own history. Only add dates you have checked.",
+  "festivals": [
+    {
+      "name": "Dussehra",
+      "date": "2026-10-20",
+      "lead_days": 4,
+      "uplift": 1.2,
+      "source": "https://dekhopanchang.com/en/festivals/dussehra"
+    },
+    {
+      "name": "Diwali",
+      "date": "2026-11-08",
+      "lead_days": 10,
+      "uplift": 1.5,
+      "source": "https://dekhopanchang.com/en/festivals/diwali"
+    }
+  ]
+}

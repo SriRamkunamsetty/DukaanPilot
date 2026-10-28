@@ -1,0 +1,35 @@
+[project]
+name = "dukaanpilot"
+version = "0.1.0"
+description = "Proactive, voice-first operations agent for small shops, built on Google ADK and Cloud Run."
+requires-python = ">=3.11"
+dependencies = [
+  "google-adk[db]==2.12.0",
+  "httpx>=0.28,<1",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "pytest-asyncio>=0.24", "ruff>=0.6"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+filterwarnings = ["ignore::UserWarning"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+extend-exclude = [".venv", ".local"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "S", "BLE"]
+ignore = [
+  "S101",   # asserts are fine in tests and for internal invariants
+  "S311",   # random is used only to generate synthetic demo data
+  "BLE001", # broad excepts are deliberate at request/tool boundaries and are logged
+  "E501",   # long strings (translations) are fine
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S", "B"]
+"scripts/*" = ["S"]

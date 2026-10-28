@@ -1,0 +1,42 @@
+# CI/CD for Cloud Build: test -> build -> push -> deploy.
+# Trigger it from GitHub, or run once with:  gcloud builds submit --config cloudbuild.yaml
+substitutions:
+  _REGION: asia-south1
+  _SERVICE: dukaanpilot
+  _REPO: dukaanpilot
+
+steps:
+  - id: test
+    name: python:3.13-slim
+    entrypoint: bash
+    args:
+      - -ec
+      - |
+        pip install -q -r requirements-dev.txt
+        ruff check .
+        python -m pytest -q
+
+  - id: build
+    name: gcr.io/cloud-builders/docker
+    args: ["build", "-t", "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_SERVICE}:$SHORT_SHA", "."]
+    waitFor: [test]
+
+  - id: push
+    name: gcr.io/cloud-builders/docker
+    args: ["push", "${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_SERVICE}:$SHORT_SHA"]
+
+  - id: deploy
+    name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - ${_SERVICE}
+      - --image=${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_SERVICE}:$SHORT_SHA
+      - --region=${_REGION}
+
+images:
+  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_SERVICE}:$SHORT_SHA
+
+options:
+  logging: CLOUD_LOGGING_ONLY
