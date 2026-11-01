@@ -41,8 +41,23 @@ Built for the Google Gen AI Academy challenge *Track 3 — Automate Daily Operat
 
 **Design rule: the model can propose, only a person can approve.** The agent can create reorder drafts but has no tool that approves one. Approval is a Telegram button handled by code, using an atomic compare-and-set (pending → approved/rejected/expired), so double-taps and retries cannot send an order twice.
 
-### Google technologies
-Agent Development Kit (`Agent`, `Runner`, `FunctionTool`, sessions, `adk eval`) · Gemini on Vertex AI (text and inline audio) · Cloud Run · Cloud Scheduler (OIDC) · Firestore · Secret Manager · Cloud Build · Cloud Logging/Trace.
+## Tech stack
+
+| Layer | Technology | Role in DukaanPilot |
+|---|---|---|
+| **Agent Framework** | [Google Agent Development Kit (ADK) 2.12.0](https://github.com/google/agent-development-kit) | `Agent`, `Runner`, typed tools (`FunctionTool`), `ToolContext` state management, session services, `adk eval` |
+| **Foundation Model** | Gemini on Vertex AI (`gemini-3.5-flash` / Google GenAI SDK) | Understands intent, invokes tools, reasons on multimodal inputs (voice notes & text), phrases localized answers |
+| **Compute & Hosting** | Google Cloud Run | Fully managed containerized service; scales to zero, automated HTTPS, least-privilege service account |
+| **Proactive Scheduling** | Google Cloud Scheduler | Hourly cron trigger targeting `/internal/jobs/run` with OIDC identity tokens |
+| **Production Database** | Google Cloud Firestore (Native Mode) | Multi-tenant operational store (shops, products, sales, reorder drafts, notifications, audit log) |
+| **Local Database & Sessions** | SQLite (WAL mode) / `aiosqlite` | Local dev database & session memory via ADK `DatabaseSessionService` |
+| **Secrets Management** | Google Secret Manager | Secure storage and access for Telegram bot token, webhook secret, and internal keys |
+| **Web API Framework** | FastAPI & Starlette (Uvicorn) | Telegram webhook endpoint, health checks (`/healthz`, `/readyz`), internal job runner, OIDC auth gate |
+| **Messaging Channel** | Telegram Bot API (`httpx`) | Multilingual chat interface, voice note processing (OGG/MP3), and interactive inline keyboard buttons |
+| **Supplier Communication** | WhatsApp Click-to-Chat (`wa.me`) | Deep links pre-filled with supplier order text in the supplier's language upon owner approval |
+| **Observability** | Google Cloud Logging & Cloud Trace | Structured JSON logs with log levels and trace propagation |
+| **CI/CD & Containerization** | Docker, Cloud Build & Artifact Registry | Python 3.13-slim non-root container (`cloudbuild.yaml` automated lint, test, build, push, deploy) |
+| **Testing & Quality** | Pytest, pytest-asyncio, Ruff | 110+ unit and contract tests, mutation guards, ADK scripted runner evaluations, and strict linting |
 
 ## Security model
 
